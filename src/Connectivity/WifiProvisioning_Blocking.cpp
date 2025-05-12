@@ -18,6 +18,7 @@
 
 // Project
 #include "FwConfig.h"
+#include "Logging.h"
 
 // Libraries
 #include "WiFiManager.h"
@@ -33,8 +34,21 @@ std::optional<bool> WifiProv_Connect(uint32_t timeout_s)
     {
         _wifi_manager.disconnect();
     }
-    was_connected = true;
-    return _wifi_manager.autoConnect();
+
+    constexpr uint32_t kSuffixLen = 6;
+    constexpr uint32_t kMacAddrLen = 6;
+    char combined_ap_name[strlen(kAccessPointName) + kSuffixLen];
+    uint8_t mac[kMacAddrLen];
+    esp_read_mac(mac, ESP_MAC_WIFI_STA);
+    const auto n_written_bytes =
+        snprintf(combined_ap_name, sizeof(combined_ap_name), "%s_%02X%02X", kAccessPointName, mac[4], mac[5]);
+    if (n_written_bytes != sizeof(combined_ap_name) - 1)
+    {
+        LOG_DEBUG("Error creating AP name");
+    }
+
+    was_connected = _wifi_manager.autoConnect(combined_ap_name);
+    return was_connected;
 }
 bool WifiProv_IsConnectedToWifi()
 {
