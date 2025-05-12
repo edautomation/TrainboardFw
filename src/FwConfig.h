@@ -20,7 +20,7 @@
 #include <cstdint>
 
 // Version info
-#define FW_VERSION "0.10.0"
+#define FW_VERSION "0.10.1"
 constexpr uint32_t kHwVersionPin = 8;
 
 // Scheduling
