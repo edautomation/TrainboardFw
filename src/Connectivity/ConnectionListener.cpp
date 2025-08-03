@@ -64,6 +64,10 @@ void ConnectionListener::ServerNokStateFunc()
                 state_ = State::kServerOk;
                 event_queue_.push(CONNECTED);
             }
+            else
+            {
+                LOG_INFO("Connection listener - Still disconnected, trying again in 30 seconds");
+            }
         }
     }
     else
@@ -85,6 +89,11 @@ void ConnectionListener::ServerOkStateFunc()
                 state_ = State::kServerNok;
                 event_queue_.push(DISCONNECTED);
             }
+            else
+            {
+                event_queue_.push(CONNECTED);
+                LOG_INFO("Connection listener - Still connected");
+            }
         }
     }
     else
@@ -95,11 +104,20 @@ void ConnectionListener::ServerOkStateFunc()
 
 bool ConnectionListener::Ping()
 {
+    LOG_INFO("Connection listener - Pinging server...");
     auto is_server_reachable = false;
     const auto ping_result = ServerCom_Ping();
     if (ping_result.has_value())
     {
         is_server_reachable = ping_result.value();
+        if (is_server_reachable)
+        {
+            LOG_INFO("Connection listener - Success pinging server.");
+        }
+        else
+        {
+            LOG_INFO("Connection listener - Failure pinging server.");
+        }
     }
     return is_server_reachable;
 }
