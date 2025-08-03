@@ -116,7 +116,7 @@ bool ConnectionListener::Ping()
         }
         else
         {
-            LOG_INFO("Connection listener - failure pinging server.");
+            LOG_INFO("Connection listener - Failure pinging server.");
         }
     }
     return is_server_reachable;
