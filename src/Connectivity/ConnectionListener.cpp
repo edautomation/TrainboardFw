@@ -112,7 +112,7 @@ bool ConnectionListener::Ping()
         is_server_reachable = ping_result.value();
         if (is_server_reachable)
         {
-            LOG_INFO("Connection listener - success pinging server.");
+            LOG_INFO("Connection listener - Success pinging server.");
         }
         else
         {
