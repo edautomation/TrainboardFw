@@ -61,6 +61,7 @@ bool DataConv_IsHistoryDataValid(const uint8_t* const data, uint32_t data_length
 
     if (IsDataNullEmptyOrTooLong(data, data_length, kNumberOfHistoryFrames * kBufferSizeInBytes))
     {
+        LOG_DEBUG("DataConv - Data null, empty or too long");
         is_data_valid = false;
     }
     else
@@ -73,10 +74,28 @@ bool DataConv_IsHistoryDataValid(const uint8_t* const data, uint32_t data_length
             const auto n_leds_in_frame = (data[frame_start_index] << 8) + data[second_byte_in_frame];
             const auto frame_length = kBytesInHeader + n_leds_in_frame * kBytesPerLed;
             is_data_valid = DataConv_IsDataValid(&data[frame_start_index], frame_length);
+            if (!is_data_valid)
+            {
+                etl::string<64> msg("DataConv - Invalid frame at index: ");
+                etl::to_string(frame_start_index, msg, true);
+                LOG_ERROR(msg.c_str());
+            }
             frame_cnt++;
             frame_start_index += frame_length;
         }
 
+        if (kNumberOfHistoryFrames != frame_cnt)
+        {
+            etl::string<64> msg("DataConv - Wrong number of frames: ");
+            etl::to_string(frame_cnt, msg, true);
+            LOG_ERROR(msg.c_str());
+        }
+        if (frame_start_index != data_length)
+        {
+            etl::string<64> msg("DataConv - Frame start index does not match data length: ");
+            etl::to_string(frame_start_index, msg, true);
+            LOG_ERROR(msg.c_str());
+        }
         is_data_valid = is_data_valid && (kNumberOfHistoryFrames == frame_cnt);
         is_data_valid = is_data_valid && (frame_start_index == data_length);
     }
