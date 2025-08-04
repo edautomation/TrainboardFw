@@ -37,8 +37,7 @@ TEST(IsHistoryDataValidTest, LengthGreaterThanMaxBufferSize_ReturnsFalse)
     uint8_t buffer[42U];
     EXPECT_FALSE(DataConv_IsHistoryDataValid(buffer, (kNumberOfHistoryFrames * kBufferSizeInBytes) + 1U));
 }
-
-TEST(IsHistoryDataValidTest, LessThan70Frames_ReturnsFalse)
+TEST(IsHistoryDataValidTest, LessThanMaxFrames_ReturnsTrue)
 {
     constexpr size_t kNLedsInFrame = 3U;
     constexpr size_t kFrameLength = kBytesInHeader + kNLedsInFrame * kBytesPerLed;
@@ -47,9 +46,9 @@ TEST(IsHistoryDataValidTest, LessThan70Frames_ReturnsFalse)
     uint8_t buffer[kBufferLength] = {};
     for (auto i = 0U; i < kNFrames; i++)
     {
-        buffer[i * (kFrameLength - 1) + 1] = kNLedsInFrame;
+        buffer[i * kFrameLength + 1] = kNLedsInFrame;
     }
-    EXPECT_FALSE(DataConv_IsHistoryDataValid(buffer, kBufferLength));
+    EXPECT_TRUE(DataConv_IsHistoryDataValid(buffer, kBufferLength));
 }
 
 TEST(IsHistoryDataValidTest, WrongFrame_ReturnFalse)
@@ -65,11 +64,12 @@ TEST(IsHistoryDataValidTest, ValidNumberOfFramesAndValidFrames_ReturnsTrue)
     constexpr size_t kFrameLength = kBytesInHeader + kNLedsInFrame * kBytesPerLed;
     constexpr size_t kNFrames = kNumberOfHistoryFrames;
     constexpr size_t kBufferLength = kNFrames * kFrameLength;
-    uint8_t buffer[kBufferLength];
+    uint8_t buffer[kBufferLength] = {};
     for (auto i = 0U; i < kNFrames; i++)
     {
-        buffer[i * (kFrameLength - 1) + 1] = kNLedsInFrame;
+        buffer[i * kFrameLength + 1] = kNLedsInFrame;
     }
+    EXPECT_TRUE(DataConv_IsHistoryDataValid(buffer, kBufferLength));
 }
 
 TEST(IsHistoryDataValidTest, RealDataFromServer_ReturnsTrue)

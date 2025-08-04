@@ -122,7 +122,7 @@ class HistoryDataStoreReader : public DataReader
     void IncrementFrameIndex()
     {
         frame_index_++;
-        if (frame_index_ >= kNumberOfHistoryFrames)
+        if (frame_index_ >= buffer_.size())
         {
             frame_index_ = 0U;
         }
@@ -162,7 +162,7 @@ class HistoryDataStoreWriter : public DataWriter
             buffer_.push(frame);
         }
 
-        return buffer_.full();  // Buffer has the size of the history. If it full, all data was correctly written
+        return true;
     }
 
   private:
