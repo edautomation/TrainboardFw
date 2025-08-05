@@ -110,10 +110,9 @@ TEST_F(DataMgrHistoryStoreTest, WriterWithValidData_ReadDataTwice_GetSecondFrame
     EXPECT_EQ(kFrameLength, reader_->ReadData(read_buffer.data(), read_buffer.size()));
     EXPECT_EQ(read_buffer, expected_frame);
 }
-
-TEST_F(DataMgrHistoryStoreTest, Writer_Not70Frames_ReturnFalse)
+TEST_F(DataMgrHistoryStoreTest, Writer_NotMaxFrames_ReturnTrue)
 {
-    EXPECT_FALSE(writer_->SaveData(hist_buffer.data(), hist_buffer.size() - 1));
+    EXPECT_TRUE(writer_->SaveData(hist_buffer.data(), hist_buffer.size() - 1));
 }
 
 TEST_F(DataMgrHistoryStoreTest, LiveModeOverwriteHistory_SecondOldestFrameIsTakeWhenReadingAndNewFrameReadLast)
@@ -196,4 +195,32 @@ TEST_F(DataMgrHistoryStoreTest, HistoryMode_RewriteHistory_HistoryRewritten)
     EXPECT_EQ(kFrameLength, reader_->ReadData(read_buffer.data(), read_buffer.size()));
     EXPECT_EQ(kFrameLength, reader_->ReadData(read_buffer.data(), read_buffer.size()));
     EXPECT_EQ(read_buffer, new_second_frame);
+}
+
+TEST_F(DataMgrHistoryStoreTest, WriterWithValidData_ReadDataMaxSize_GetLastFrame)
+{
+    EXPECT_TRUE(writer_->SaveData(hist_buffer.data(), hist_buffer.size()));
+
+    static_assert(kNumberOfHistoryFrames < UINT8_MAX);
+    constexpr auto k = static_cast<uint8_t>(kNumberOfHistoryFrames) - 1;
+    std::array<uint8_t, kFrameLength> read_buffer{};
+    std::array<uint8_t, kFrameLength> expected_frame{0, 1, k, k + 1, k + 2, k + 3, k + 4};
+    for (auto i = 0; i < kHistDataBufferLength; i++)
+    {
+        ASSERT_EQ(kFrameLength, reader_->ReadData(read_buffer.data(), read_buffer.size()));
+    }
+    EXPECT_EQ(read_buffer, expected_frame);
+}
+
+TEST_F(DataMgrHistoryStoreTest, WriterWithValidDataLessThanMax_ReadDataMaxSize_GetFirstFrame)
+{
+    EXPECT_TRUE(writer_->SaveData(hist_buffer.data(), hist_buffer.size() - 1));
+
+    std::array<uint8_t, kFrameLength> read_buffer{};
+    std::array<uint8_t, kFrameLength> expected_frame{0, 1, 0, 1, 2, 3, 4};
+    for (auto i = 0; i < kNumberOfHistoryFrames; i++)
+    {
+        ASSERT_EQ(kFrameLength, reader_->ReadData(read_buffer.data(), read_buffer.size()));
+    }
+    EXPECT_EQ(read_buffer, expected_frame);
 }

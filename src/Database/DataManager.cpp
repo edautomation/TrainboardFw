@@ -27,6 +27,11 @@
 
 // WARNING: NOTHING IS THREAD-SAFE HERE!
 
+// Anonymous namespace as alternative to static
+// https://stackoverflow.com/questions/4977252/why-an-unnamed-namespace-is-a-superior-alternative-to-static
+namespace
+{
+
 class LiveDataStoreReader : public DataReader
 {
   public:
@@ -115,17 +120,38 @@ class HistoryDataStoreReader : public DataReader
         frame_index_ = 0;
     }
 
-  private:
-    const RealDataCircularBuffer& buffer_;
-    uint8_t frame_index_{0};
-
-    void IncrementFrameIndex()
+  protected:
+    uint8_t GetFrameIndex() const { return frame_index_; }
+    void SetFrameIndex(uint8_t index) { frame_index_ = index; }
+    virtual void IncrementFrameIndex()
     {
         frame_index_++;
-        if (frame_index_ >= kNumberOfHistoryFrames)
+        if (frame_index_ >= buffer_.size())
         {
             frame_index_ = 0U;
         }
+    }
+
+  private:
+    const RealDataCircularBuffer& buffer_;
+    uint8_t frame_index_{0};
+};
+
+class FakeDataStoreReader : public HistoryDataStoreReader
+{
+  public:
+    using HistoryDataStoreReader::HistoryDataStoreReader;
+
+  protected:
+    void IncrementFrameIndex() override
+    {
+        auto frame_index = GetFrameIndex();
+        frame_index++;
+        if (frame_index >= kNumberOfFakeFrames)
+        {
+            frame_index = 0U;
+        }
+        SetFrameIndex(frame_index);
     }
 };
 
@@ -162,23 +188,25 @@ class HistoryDataStoreWriter : public DataWriter
             buffer_.push(frame);
         }
 
-        return buffer_.full();  // Buffer has the size of the history. If it full, all data was correctly written
+        return true;
     }
 
   private:
     RealDataCircularBuffer& buffer_;
 };
 
-static Frame _real_data_buffer[kNumberOfHistoryFrames + 1]{};
-static RealDataCircularBuffer _real_data{static_cast<void*>(&_real_data_buffer[0]), kNumberOfHistoryFrames};
+Frame _real_data_buffer[kNumberOfHistoryFrames + 1]{};
+RealDataCircularBuffer _real_data{static_cast<void*>(&_real_data_buffer[0]), kNumberOfHistoryFrames};
 
-static DataReaderMode _data_reader_mode{DataReaderMode::kLive};
-static DataWriterMode _data_writer_mode{DataWriterMode::kMultiple};
-static LiveDataStoreWriter _live_data_store_writer{_real_data};
-static LiveDataStoreReader _live_data_store_reader{_real_data};
-static HistoryDataStoreWriter _history_data_store_writer{_real_data};
-static HistoryDataStoreReader _history_data_store_reader{_real_data};
-static HistoryDataStoreReader _fake_data_store_reader{g_fake_data};
+DataReaderMode _data_reader_mode{DataReaderMode::kLive};
+DataWriterMode _data_writer_mode{DataWriterMode::kMultiple};
+LiveDataStoreWriter _live_data_store_writer{_real_data};
+LiveDataStoreReader _live_data_store_reader{_real_data};
+HistoryDataStoreWriter _history_data_store_writer{_real_data};
+HistoryDataStoreReader _history_data_store_reader{_real_data};
+FakeDataStoreReader _fake_data_store_reader{g_fake_data};
+
+}  // namespace
 
 void DataMgr_Reset()
 {
