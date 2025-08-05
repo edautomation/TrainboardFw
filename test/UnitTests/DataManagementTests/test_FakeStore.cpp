@@ -47,7 +47,6 @@ TEST_F(DataMgrFakeStoreTest, Reader_LengthZero_ReturnZero)
     EXPECT_EQ(reader_->ReadData(buffer.data(), 0U), 0U);
 }
 
-// TODO: find a way that size of the circular buffer is max size even if it is never written to.
 TEST_F(DataMgrFakeStoreTest, CircularReadThroughFakeData_EnsureCircularBehaviour)
 {
     for (auto i = 0; i < kNumberOfFakeFrames + 5U; i++)

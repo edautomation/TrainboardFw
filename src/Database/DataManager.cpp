@@ -115,14 +115,33 @@ class HistoryDataStoreReader : public DataReader
         frame_index_ = 0;
     }
 
-  private:
-    const RealDataCircularBuffer& buffer_;
+  protected:
     uint8_t frame_index_{0};
-
-    void IncrementFrameIndex()
+    virtual void IncrementFrameIndex()
     {
         frame_index_++;
         if (frame_index_ >= buffer_.size())
+        {
+            frame_index_ = 0U;
+        }
+    }
+
+  private:
+    const RealDataCircularBuffer& buffer_;
+};
+
+class FakeDataStoreReader : public HistoryDataStoreReader
+{
+  public:
+    using HistoryDataStoreReader::HistoryDataStoreReader;
+
+  protected:
+    void IncrementFrameIndex() override
+    {
+        frame_index_++;
+
+        // Fake data always has the maximum number of frames
+        if (frame_index_ >= kNumberOfFakeFrames)
         {
             frame_index_ = 0U;
         }
@@ -178,7 +197,7 @@ static LiveDataStoreWriter _live_data_store_writer{_real_data};
 static LiveDataStoreReader _live_data_store_reader{_real_data};
 static HistoryDataStoreWriter _history_data_store_writer{_real_data};
 static HistoryDataStoreReader _history_data_store_reader{_real_data};
-static HistoryDataStoreReader _fake_data_store_reader{g_fake_data};
+static FakeDataStoreReader _fake_data_store_reader{g_fake_data};
 
 void DataMgr_Reset()
 {
