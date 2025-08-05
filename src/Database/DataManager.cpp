@@ -27,6 +27,11 @@
 
 // WARNING: NOTHING IS THREAD-SAFE HERE!
 
+// Anonymous namespace as alternative to static
+// https://stackoverflow.com/questions/4977252/why-an-unnamed-namespace-is-a-superior-alternative-to-static
+namespace
+{
+
 class LiveDataStoreReader : public DataReader
 {
   public:
@@ -188,16 +193,18 @@ class HistoryDataStoreWriter : public DataWriter
     RealDataCircularBuffer& buffer_;
 };
 
-static Frame _real_data_buffer[kNumberOfHistoryFrames + 1]{};
-static RealDataCircularBuffer _real_data{static_cast<void*>(&_real_data_buffer[0]), kNumberOfHistoryFrames};
+Frame _real_data_buffer[kNumberOfHistoryFrames + 1]{};
+RealDataCircularBuffer _real_data{static_cast<void*>(&_real_data_buffer[0]), kNumberOfHistoryFrames};
 
-static DataReaderMode _data_reader_mode{DataReaderMode::kLive};
-static DataWriterMode _data_writer_mode{DataWriterMode::kMultiple};
-static LiveDataStoreWriter _live_data_store_writer{_real_data};
-static LiveDataStoreReader _live_data_store_reader{_real_data};
-static HistoryDataStoreWriter _history_data_store_writer{_real_data};
-static HistoryDataStoreReader _history_data_store_reader{_real_data};
-static FakeDataStoreReader _fake_data_store_reader{g_fake_data};
+DataReaderMode _data_reader_mode{DataReaderMode::kLive};
+DataWriterMode _data_writer_mode{DataWriterMode::kMultiple};
+LiveDataStoreWriter _live_data_store_writer{_real_data};
+LiveDataStoreReader _live_data_store_reader{_real_data};
+HistoryDataStoreWriter _history_data_store_writer{_real_data};
+HistoryDataStoreReader _history_data_store_reader{_real_data};
+FakeDataStoreReader _fake_data_store_reader{g_fake_data};
+
+}  // namespace
 
 void DataMgr_Reset()
 {
