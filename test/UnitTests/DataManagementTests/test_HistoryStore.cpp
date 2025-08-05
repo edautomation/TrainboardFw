@@ -110,7 +110,7 @@ TEST_F(DataMgrHistoryStoreTest, WriterWithValidData_ReadDataTwice_GetSecondFrame
     EXPECT_EQ(kFrameLength, reader_->ReadData(read_buffer.data(), read_buffer.size()));
     EXPECT_EQ(read_buffer, expected_frame);
 }
-TEST_F(DataMgrHistoryStoreTest, Writer_Not70Frames_ReturnTrue)
+TEST_F(DataMgrHistoryStoreTest, Writer_NotMaxFrames_ReturnTrue)
 {
     EXPECT_TRUE(writer_->SaveData(hist_buffer.data(), hist_buffer.size() - 1));
 }
@@ -196,8 +196,6 @@ TEST_F(DataMgrHistoryStoreTest, HistoryMode_RewriteHistory_HistoryRewritten)
     EXPECT_EQ(kFrameLength, reader_->ReadData(read_buffer.data(), read_buffer.size()));
     EXPECT_EQ(read_buffer, new_second_frame);
 }
-
-// TODO: write less than max history size, then read max history size: last frame is the same as the first one
 
 TEST_F(DataMgrHistoryStoreTest, WriterWithValidData_ReadDataMaxSize_GetLastFrame)
 {
