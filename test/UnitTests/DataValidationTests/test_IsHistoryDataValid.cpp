@@ -46,7 +46,8 @@ TEST(IsHistoryDataValidTest, LessThanMaxFrames_ReturnsTrue)
     uint8_t buffer[kBufferLength] = {};
     for (auto i = 0U; i < kNFrames; i++)
     {
-        buffer[i * kFrameLength + 1] = kNLedsInFrame;
+        buffer[i * kFrameLength + 1] = static_cast<uint8_t>(kNLedsInFrame & 0xFF);
+        buffer[i * kFrameLength + 2] = static_cast<uint8_t>((kNLedsInFrame >> 8) & 0xFF);
     }
     EXPECT_TRUE(DataConv_IsHistoryDataValid(buffer, kBufferLength));
 }
@@ -67,7 +68,8 @@ TEST(IsHistoryDataValidTest, ValidNumberOfFramesAndValidFrames_ReturnsTrue)
     uint8_t buffer[kBufferLength] = {};
     for (auto i = 0U; i < kNFrames; i++)
     {
-        buffer[i * kFrameLength + 1] = kNLedsInFrame;
+        buffer[i * kFrameLength + 1] = static_cast<uint8_t>(kNLedsInFrame & 0xFF);
+        buffer[i * kFrameLength + 2] = static_cast<uint8_t>((kNLedsInFrame >> 8) & 0xFF);
     }
     EXPECT_TRUE(DataConv_IsHistoryDataValid(buffer, kBufferLength));
 }

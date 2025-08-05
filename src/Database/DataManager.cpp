@@ -121,7 +121,8 @@ class HistoryDataStoreReader : public DataReader
     }
 
   protected:
-    uint8_t frame_index_{0};
+    uint8_t GetFrameIndex() const { return frame_index_; }
+    void SetFrameIndex(uint8_t index) { frame_index_ = index; }
     virtual void IncrementFrameIndex()
     {
         frame_index_++;
@@ -133,6 +134,7 @@ class HistoryDataStoreReader : public DataReader
 
   private:
     const RealDataCircularBuffer& buffer_;
+    uint8_t frame_index_{0};
 };
 
 class FakeDataStoreReader : public HistoryDataStoreReader
@@ -143,13 +145,13 @@ class FakeDataStoreReader : public HistoryDataStoreReader
   protected:
     void IncrementFrameIndex() override
     {
-        frame_index_++;
-
-        // Fake data always has the maximum number of frames
-        if (frame_index_ >= kNumberOfFakeFrames)
+        auto frame_index = GetFrameIndex();
+        frame_index++;
+        if (frame_index >= kNumberOfFakeFrames)
         {
-            frame_index_ = 0U;
+            frame_index = 0U;
         }
+        SetFrameIndex(frame_index);
     }
 };
 
